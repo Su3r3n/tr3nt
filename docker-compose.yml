@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: tr3nt-db
+    environment:
+      POSTGRES_USER: tr3nt
+      POSTGRES_PASSWORD: tr3nt
+      POSTGRES_DB: tr3nt
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - tr3nt-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tr3nt -d tr3nt']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  tr3nt-pgdata:
