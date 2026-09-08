@@ -1,7 +1,3 @@
-/**
- * Domain errors carry an HTTP status but never import from @nestjs/*: the domain layer
- * must stay usable from a CLI, a test or a future desktop process without a web server.
- */
 export class DomainError extends Error {
   constructor(
     message: string,
@@ -28,5 +24,16 @@ export class ConflictError extends DomainError {
 export class InvalidRequestError extends DomainError {
   constructor(message: string, code = 'invalid_request') {
     super(message, code, 400);
+  }
+}
+
+export class ProviderError extends DomainError {
+  constructor(
+    message: string,
+    code = 'provider_error',
+    httpStatus = 502,
+    readonly retryable = false,
+  ) {
+    super(message, code, httpStatus);
   }
 }

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, lt, sql } from 'drizzle-orm';
 import { ConflictError } from '../../common/errors';
 import { rowsOf } from '../../db/raw';
 import { messages, type MessageRow } from '../../db/schema';
@@ -37,14 +37,13 @@ export class MessagesService {
 
   async list(stateId: string): Promise<MessageRow[]> {
     await this.statesService.requireState(stateId);
-    return this.db.select().from(messages).where(eq(messages.stateId, stateId)).orderBy(asc(messages.seq));
+    return this.db
+      .select()
+      .from(messages)
+      .where(eq(messages.stateId, stateId))
+      .orderBy(asc(messages.seq));
   }
 
-  /**
-   * Appends with a per-state sequence number computed inside the INSERT, so two concurrent
-   * appends cannot both claim the same seq: the unique index rejects the loser and we retry.
-   * Cheaper and clearer than holding a transaction open around a SELECT max(seq).
-   */
   async append(stateId: string, input: AppendMessageInput): Promise<MessageRow> {
     await this.statesService.requireState(stateId);
 
@@ -96,10 +95,20 @@ export class MessagesService {
     );
   }
 
-  /** Marks a streamed message complete. Until then no branch may be taken from it. */
+  /**
+   * The moment a streamed answer becomes real. Until this runs the row exists but is
+   * invisible: context assembly filters on status = 'complete' and forking refuses
+   * anything else, so visibility flips atomically here and nowhere else.
+   */
   async complete(
     messageId: string,
-    patch: { content?: string; tokensIn?: number | null; tokensOut?: number | null },
+    patch: {
+      content?: string;
+      model?: string | null;
+      tokensIn?: number | null;
+      tokensOut?: number | null;
+      costUsd?: string | null;
+    },
   ): Promise<MessageRow | null> {
     const updated = await this.db
       .update(messages)
@@ -107,6 +116,33 @@ export class MessagesService {
       .where(eq(messages.id, messageId))
       .returning();
     return updated[0] ?? null;
+  }
+
+  /**
+   * A stream that died. The partial text is kept — it is often the most useful thing about
+   * a failure — but the message stays invisible to context and to forks.
+   */
+  async fail(messageId: string, patch: { content?: string } = {}): Promise<MessageRow | null> {
+    const updated = await this.db
+      .update(messages)
+      .set({ ...patch, status: 'failed' })
+      .where(eq(messages.id, messageId))
+      .returning();
+    return updated[0] ?? null;
+  }
+
+  /**
+   * A crash mid-stream leaves a row stuck in 'streaming' forever. It is harmless (invisible
+   * everywhere) but it clutters the UI, so the daemon sweeps them once on boot.
+   */
+  async sweepStaleStreaming(olderThanMs = 5 * 60 * 1000): Promise<number> {
+    const cutoff = new Date(Date.now() - olderThanMs);
+    const updated = await this.db
+      .update(messages)
+      .set({ status: 'failed' })
+      .where(and(eq(messages.status, 'streaming'), lt(messages.createdAt, cutoff)))
+      .returning({ id: messages.id });
+    return updated.length;
   }
 }
 
