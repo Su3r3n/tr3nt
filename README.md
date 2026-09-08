@@ -24,7 +24,7 @@ much easier to find when nothing in the system is non-deterministic.
 
 - [x] **P0** repository, Postgres, migrations, lint/types/tests
 - [x] **P1** project → root state → branches, fork from any message, tree, context assembly
-- [ ] **P2** Gemini provider, SSE streaming, usage accounting
+- [x] **P2** Gemini provider, SSE streaming, usage accounting
 - [ ] **P2.5** thin web client (three panes: tree, state, chat)
 - [ ] **P3** Context Engine with a hard token budget
 - [ ] **P4** explicit checkpoints → Decisions

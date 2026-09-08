@@ -32,7 +32,7 @@ interface RawMessage {
 export class MessagesService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Db,
-    private readonly statesService: StatesService,
+    @Inject(StatesService) private readonly statesService: StatesService,
   ) {}
 
   async list(stateId: string): Promise<MessageRow[]> {

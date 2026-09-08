@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Inject, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ForkStateDto, UpdateStateDto } from './dto';
 import { StatesService } from './states.service';
 
 @Controller('states')
 export class StatesController {
-  constructor(private readonly statesService: StatesService) {}
+  constructor(@Inject(StatesService) private readonly statesService: StatesService) {}
 
   @Get(':id')
   byId(@Param('id', ParseUUIDPipe) id: string) {

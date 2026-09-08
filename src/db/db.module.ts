@@ -12,7 +12,7 @@ const CLIENT = 'POSTGRES_CLIENT';
     {
       provide: CLIENT,
       useFactory: () =>
-        postgres(process.env.DATABASE_URL ?? 'postgres://tr3nt:tr3nt@localhost:5432/tr3nt', {
+        postgres(process.env.DATABASE_URL ?? 'postgres://tr3nt:tr3nt@localhost:5433/tr3nt', {
           max: 10,
         }),
     },

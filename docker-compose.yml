@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: tr3nt
       POSTGRES_DB: tr3nt
     ports:
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - tr3nt-pgdata:/var/lib/postgresql/data
     healthcheck:

@@ -45,8 +45,8 @@ export type ChatEvent =
 export class ChatService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Db,
-    private readonly statesService: StatesService,
-    private readonly messagesService: MessagesService,
+    @Inject(StatesService) private readonly statesService: StatesService,
+    @Inject(MessagesService) private readonly messagesService: MessagesService,
     @Inject(LLM_PROVIDER) private readonly provider: LlmProvider,
     @Inject(CHAT_OPTIONS) private readonly options: ChatOptions,
   ) {}

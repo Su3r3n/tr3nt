@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
+import { Inject, Body, Controller, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { DomainError } from '../../common/errors';
 import { ChatService } from './chat.service';
@@ -6,7 +6,7 @@ import { SendChatDto } from './dto';
 
 @Controller('states/:id/chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(@Inject(ChatService) private readonly chatService: ChatService) {}
 
   /**
    * Server-sent events, written to the raw response rather than through Nest's @Sse()
