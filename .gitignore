@@ -6,3 +6,5 @@ dist/
 _to_delete/
 .DS_Store
 .idea/
+web/node_modules/
+web/dist/
